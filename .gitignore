@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# Except this file, MarkDown and DBA script files
+!.gitignore
+!*.dba
+!*.md

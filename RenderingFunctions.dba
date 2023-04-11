@@ -1,0 +1,75 @@
+rem ======================================================
+rem ======================================================
+rem ================ Rendering Functions =================
+rem ======================================================
+rem ======================================================
+
+function Render2D(width, height, pratio)
+sync on
+hide mouse
+
+if pratio = 1
+    save bitmap "fullrender_start.bmp"
+
+    for j=1 to height
+        for i=1 to width
+            r=pixels(i,j,1)
+            g=pixels(i,j,2)
+            b=pixels(i,j,3)
+            ink rgb(r,g,b),0
+            dot i-1,j-1
+        next i
+        sync
+    next j
+
+    save bitmap "full_render.bmp"
+else 
+    pheight = height/pratio
+    pwidth = width/pratio
+    dim ppixels(pwidth,pheight,3)
+    
+    for j=1 to pheight
+        for i=1 to pwidth
+            r=0
+            g=0
+            b=0
+            for y=(j-1)*pratio to (j*pratio)-1
+                for x=(i-1)*pratio to (i*pratio)-1
+                    r = r + pixels(x,y,1)
+                    g = g + pixels(x,y,2)
+                    b = b + pixels(x,y,3)
+                next x
+            next y
+            r = r/(pratio*pratio)
+            g = g/(pratio*pratio)
+            b = b/(pratio*pratio)
+            ppixels(i,j,1)=r
+            ppixels(i,j,2)=g
+            ppixels(i,j,3)=b
+        next i
+    next j
+    
+    save bitmap "preview_start.bmp"
+    
+    for j=1 to pheight
+        for i=1 to pwidth
+            r=ppixels(i,j,1)
+            g=ppixels(i,j,2)
+            b=ppixels(i,j,3)
+            ink rgb(r,g,b),0
+            ax=(i-1)*pratio
+            ay=(j-1)*pratio
+            bx=(i*pratio)-1
+            by=(j*pratio)-1
+            box ax,ay,bx,by
+        next i
+        sync
+    next j
+
+    save bitmap "preview_render.bmp"
+endif
+
+show mouse
+sync off
+endfunction
+

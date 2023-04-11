@@ -1,0 +1,74 @@
+rem ======================================================
+rem ======================================================
+rem =============== RayTracing Functions =================
+rem ======================================================
+rem ======================================================
+
+rem Build local coordinate system as (camright#, camup#, camforward#) in world coordinate system
+rem depending on camera angles
+function BuildLocalCoordinateSystem(cama#,camb#,camc#)
+	rem Get camera forward normalized vector
+	camforward#(1) = COS(cama#)*SIN(camb#)*COS(camc#)-SIN(cama#)*SIN(camc#)
+	camforward#(2) = SIN(cama#)*(-1.0)*COS(camc#)-COS(cama#)*SIN(camb#)*SIN(camc#)
+	camforward#(3) = COS(cama#)*COS(camb#)
+	Norm# = sqrt(camforward#(1)*camforward#(1) + camforward#(2)*camforward#(2) + camforward#(3)*camforward#(3))
+	camforward#(1) = camforward#(1)/Norm#
+	camforward#(2) = camforward#(2)/Norm#
+	camforward#(3) = camforward#(3)/Norm#
+	
+	rem Get camera up normalized vector
+	camup#(1) = SIN(cama#)*SIN(camb#)*COS(camc#)+COS(cama#)*SIN(camc#)
+	camup#(2) = COS(cama#)*COS(camc#)-SIN(cama#)*SIN(camb#)*SIN(camc#)
+	camup#(3) = SIN(cama#)*COS(camb#)
+	Norm# = sqrt(camup#(1)*camup#(1) + camup#(2)*camup#(2) + camup#(3)*camup#(3))
+	camup#(1) = camup#(1)/Norm#
+	camup#(2) = camup#(2)/Norm#
+	camup#(3) = camup#(3)/Norm#
+	
+	rem Get camera right normalized vector
+	camright#(1) = COS(camb#)*COS(camc#)
+	camright#(2) = (-1.0)*COS(camb#)*SIN(camc#)
+	camright#(3) = (-1.0)*SIN(camb#)
+	Norm# = sqrt(camright#(1)*camright#(1) + camright#(2)*camright#(2) + camright#(3)*camright#(3))
+	camright#(1) = camright#(1)/Norm#
+	camright#(2) = camright#(2)/Norm#
+	camright#(3) = camright#(3)/Norm#
+endfunction
+
+rem Build ray direction vector in (camright#, camup#, camforward#) local coordinate system
+function BuildDirectionRay(i,j,width,height,planeWidth#,planeHeight#)
+    tx# = (i-1) / (width-1.0)
+    ty# = (height-j) / (height-1.0)
+
+    rem Get world position of the view plane
+    localPosX# = bottomLeftLocal#(1) + planeWidth#*tx#
+    localPosY# = bottomLeftLocal#(2) + planeHeight#*ty#
+    localPosZ# = bottomLeftLocal#(3)
+
+    pos#(1) = cam#(1) + localPosX#*camright#(1) + localPosY#*camup#(1) + localPosZ#*camforward#(1)
+    pos#(2) = cam#(2) + localPosX#*camright#(2) + localPosY#*camup#(2) + localPosZ#*camforward#(2)
+    pos#(3) = cam#(3) + localPosX#*camright#(3) + localPosY#*camup#(3) + localPosZ#*camforward#(3)
+
+    dir#(1) = pos#(1) - cam#(1)
+    dir#(2) = pos#(2) - cam#(2)
+    dir#(3) = pos#(3) - cam#(3)
+    Norm# = sqrt(dir#(1)*dir#(1) + dir#(2)*dir#(2) + dir#(3)*dir#(3))
+    dir#(1) = dir#(1)/Norm#
+    dir#(2) = dir#(2)/Norm#
+    dir#(3) = dir#(3)/Norm#
+endfunction
+
+rem Build current ray hitinfo structure using a sphere which center is at (scx#,scy#,scz#)
+rem in world coordinate system and sradius# its radius
+function RaySphere(scx#,scy#,scz#,sradius#)
+	hitpoint#(1) = 0.0
+	hitpoint#(2) = 0.0
+	hitpoint#(3) = 0.0
+	hitnormal#(1) = 0.0
+	hitnormal#(2) = 0.0
+	hitnormal#(3) = 0.0
+
+	
+
+endfunction
+
