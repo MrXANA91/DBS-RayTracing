@@ -108,20 +108,21 @@ if Returnkey()=1
 
 	for j=1 to height
 		for i=1 to width
+			r=0
+			g=0
+			b=0
 
 			rem Get ray direction in world coordinate system
 			BuildDirectionRay(i,j,width,height,planeWidth#,planeHeight#)
 			rem Result in dir# array
 	
-			if dir#(1) < 0.0 then dir#(1) = 0.0
-			if dir#(1) > 1.0 then dir#(1) = 1.0
-			if dir#(2) < 0.0 then dir#(2) = 0.0
-			if dir#(2) > 1.0 then dir#(2) = 1.0
-			if dir#(3) < 0.0 then dir#(3) = 0.0
-			if dir#(3) > 1.0 then dir#(3) = 1.0
-			pixels(i,j,1)=dir#(1)*255
-			pixels(i,j,2)=dir#(2)*255
-			pixels(i,j,3)=dir#(3)*255
+			rem Color map XYZ direction to RGB 
+			rem gosub _RS_map_xyz_to_rgb
+			gosub _RS_white_sphere_r_20
+			
+			pixels(i,j,1)=r
+			pixels(i,j,2)=g
+			pixels(i,j,3)=b
 		next i
 	next j
 
@@ -178,14 +179,11 @@ if spacekey()=1
 			BuildDirectionRay(x,y,10,10,planeWidth#,planeHeight#)
 			rem Result in dir# array, pos# array has current pixel point coordinate in world coordinate system
 
-			if dir#(1) < 0.0 then dir#(1) = 0.0
-			if dir#(1) > 1.0 then dir#(1) = 1.0
-			if dir#(2) < 0.0 then dir#(2) = 0.0
-			if dir#(2) > 1.0 then dir#(2) = 1.0
-			if dir#(3) < 0.0 then dir#(3) = 0.0
-			if dir#(3) > 1.0 then dir#(3) = 1.0
 			position object id,pos#(1),pos#(2),pos#(3)
-			color object id,rgb(dir#(1)*255,dir#(2)*255,dir#(3)*255)
+
+			rem Test using those spheres
+			rem gosub _SS_xyz_to_rgb
+			gosub _SS_white_sphere_r_20
 		next y
 	next x
 endif
@@ -197,3 +195,39 @@ endif
 loop
 
 end
+
+rem RENDER SUBROUTINES
+_RS_map_xyz_to_rgb:
+	if dir#(1) < 0.0 then dir#(1) = 0.0
+	if dir#(1) > 1.0 then dir#(1) = 1.0
+	if dir#(2) < 0.0 then dir#(2) = 0.0
+	if dir#(2) > 1.0 then dir#(2) = 1.0
+	if dir#(3) < 0.0 then dir#(3) = 0.0
+	if dir#(3) > 1.0 then dir#(3) = 1.0
+	r=dir#(1)*255
+	g=dir#(2)*255
+	b=dir#(3)*255
+return
+
+_RS_white_sphere_r_20:
+	value=RaySphere(object position x(1000),object position y(1000),object position z(1000),20.0)*255
+	r=value
+	g=value
+	b=value
+return
+
+rem SPHERES SUBROUTINES
+_SS_xyz_to_rgb:
+	if dir#(1) < 0.0 then dir#(1) = 0.0
+	if dir#(1) > 1.0 then dir#(1) = 1.0
+	if dir#(2) < 0.0 then dir#(2) = 0.0
+	if dir#(2) > 1.0 then dir#(2) = 1.0
+	if dir#(3) < 0.0 then dir#(3) = 0.0
+	if dir#(3) > 1.0 then dir#(3) = 1.0
+	color object id,rgb(dir#(1)*255,dir#(2)*255,dir#(3)*255)
+return
+
+_SS_white_sphere_r_20:
+	value=RaySphere(object position x(1000),object position y(1000),object position z(1000),20.0)*255
+	color object id,rgb(255*value,255*value,255*value)
+return

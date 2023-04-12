@@ -4,6 +4,14 @@ rem =============== RayTracing Functions =================
 rem ======================================================
 rem ======================================================
 
+function dot(aa#,ba#,ca#,ab#,bb#,cb#)
+	dotresult# = aa#*ab# + ba#*bb# + ca#*cb#
+endfunction dotresult#
+
+function norm(a#,b#,c#)
+	Norm# = sqrt(dot(a#,b#,c#,a#,b#,c#))
+endfunction Norm#
+
 rem Build local coordinate system as (camright#, camup#, camforward#) in world coordinate system
 rem depending on camera angles
 function BuildLocalCoordinateSystem(cama#,camb#,camc#)
@@ -11,7 +19,7 @@ function BuildLocalCoordinateSystem(cama#,camb#,camc#)
 	camforward#(1) = COS(cama#)*SIN(camb#)*COS(camc#)-SIN(cama#)*SIN(camc#)
 	camforward#(2) = SIN(cama#)*(-1.0)*COS(camc#)-COS(cama#)*SIN(camb#)*SIN(camc#)
 	camforward#(3) = COS(cama#)*COS(camb#)
-	Norm# = sqrt(camforward#(1)*camforward#(1) + camforward#(2)*camforward#(2) + camforward#(3)*camforward#(3))
+	Norm# = norm(camforward#(1),camforward#(2),camforward#(3))
 	camforward#(1) = camforward#(1)/Norm#
 	camforward#(2) = camforward#(2)/Norm#
 	camforward#(3) = camforward#(3)/Norm#
@@ -20,7 +28,7 @@ function BuildLocalCoordinateSystem(cama#,camb#,camc#)
 	camup#(1) = SIN(cama#)*SIN(camb#)*COS(camc#)+COS(cama#)*SIN(camc#)
 	camup#(2) = COS(cama#)*COS(camc#)-SIN(cama#)*SIN(camb#)*SIN(camc#)
 	camup#(3) = SIN(cama#)*COS(camb#)
-	Norm# = sqrt(camup#(1)*camup#(1) + camup#(2)*camup#(2) + camup#(3)*camup#(3))
+	Norm# = norm(camup#(1),camup#(2),camup#(3))
 	camup#(1) = camup#(1)/Norm#
 	camup#(2) = camup#(2)/Norm#
 	camup#(3) = camup#(3)/Norm#
@@ -29,13 +37,15 @@ function BuildLocalCoordinateSystem(cama#,camb#,camc#)
 	camright#(1) = COS(camb#)*COS(camc#)
 	camright#(2) = (-1.0)*COS(camb#)*SIN(camc#)
 	camright#(3) = (-1.0)*SIN(camb#)
-	Norm# = sqrt(camright#(1)*camright#(1) + camright#(2)*camright#(2) + camright#(3)*camright#(3))
+	Norm# = norm(camright#(1),camright#(2),camright#(3))
 	camright#(1) = camright#(1)/Norm#
 	camright#(2) = camright#(2)/Norm#
 	camright#(3) = camright#(3)/Norm#
 endfunction
 
 rem Build ray direction vector in (camright#, camup#, camforward#) local coordinate system
+rem pos#() contains the position of the ray origin
+rem dir#() contains the normalized direction of the ray
 function BuildDirectionRay(i,j,width,height,planeWidth#,planeHeight#)
     tx# = (i-1) / (width-1.0)
     ty# = (height-j) / (height-1.0)
@@ -52,7 +62,7 @@ function BuildDirectionRay(i,j,width,height,planeWidth#,planeHeight#)
     dir#(1) = pos#(1) - cam#(1)
     dir#(2) = pos#(2) - cam#(2)
     dir#(3) = pos#(3) - cam#(3)
-    Norm# = sqrt(dir#(1)*dir#(1) + dir#(2)*dir#(2) + dir#(3)*dir#(3))
+	Norm# = norm(dir#(1),dir#(2),dir#(3))
     dir#(1) = dir#(1)/Norm#
     dir#(2) = dir#(2)/Norm#
     dir#(3) = dir#(3)/Norm#
@@ -68,7 +78,52 @@ function RaySphere(scx#,scy#,scz#,sradius#)
 	hitnormal#(2) = 0.0
 	hitnormal#(3) = 0.0
 
-	
+	hitbool = 0
 
-endfunction
+	rem Assuming that position 0,0,0 is at the center of the sphere
+	rem Checking if the ray has hit the sphere is just solving the following equation :
+	rem ||Pos + Dir * dst||^2 = sradius^2,
+	rem where dst(=distance) being the value we want to calculate
+	rem 
+	rem    ||Pos + Dir*dst||^2 = sradius^2
+	rem => (Pos + Dir*dst).(Pos + Dir*dst) = sradius^2
+	rem => Pos.Pos + 2*Pos.(Dir*dst) + (Dir*dst).(Dir*dst) = sradius^2
+	rem => Dir.Dir * dst^2 + 2*(Pos.Dir) * dst + Pos.Pos - sradius^2
+	rem This is a quadratic polynomial equation (ax^2 + bx + c = 0) width
+	rem a = Dir.Dir which here equals 1
+	rem b = 2 * (Pos.Dir)
+	rem c = Pos.Pos - sradius^2
+	rem 
+	rem Solutions if only discriminant is positive or equals 0
+
+	oposx# = pos#(1) - scx#
+	oposy# = pos#(2) - scy#
+	oposz# = pos#(3) - scz#
+
+	a# = dot(dir#(1),dir#(2),dir#(3),dir#(1),dir#(2),dir#(3))
+	b# = 2*dot(oposx#,oposy#,oposz#,dir#(1),dir#(2),dir#(3))
+	c# = dot(oposx#,oposy#,oposz#,oposx#,oposy#,oposz#) - sradius#*sradius#
+
+	delta# = b#*b# + (-4.0)*a#*c#
+
+	if (delta# >= 0)
+		dst# = ((-1.0)*b# + (-1.0)*sqrt(delta#)) / (2.0*a#)
+
+		if (dst# >= 0)
+			hitpoint#(1) = pos#(1) + dst#*dir#(1)
+			hitpoint#(2) = pos#(2) + dst#*dir#(2)
+			hitpoint#(3) = pos#(3) + dst#*dir#(3)
+			hitnormal#(1) = hitpoint#(1) - scx#
+			hitnormal#(2) = hitpoint#(2) - scy#
+			hitnormal#(3) = hitpoint#(3) - scz#
+			Norm# = norm(hitnormal#(1),hitnormal#(2),hitnormal#(3))
+			hitnormal#(1) = hitnormal#(1)/Norm#
+			hitnormal#(2) = hitnormal#(2)/Norm#
+			hitnormal#(3) = hitnormal#(3)/Norm#
+
+			hitbool = 1
+		endif
+	endif
+
+endfunction hitbool
 
