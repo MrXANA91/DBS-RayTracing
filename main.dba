@@ -210,7 +210,7 @@ _RS_map_xyz_to_rgb:
 return
 
 _RS_white_sphere_r_20:
-	value=RaySphere(object position x(1000),object position y(1000),object position z(1000),20.0)*255
+	value=RaySphere(object position x(1000),object position y(1000),object position z(1000),10.0)*255
 	r=value
 	g=value
 	b=value
@@ -228,6 +228,6 @@ _SS_xyz_to_rgb:
 return
 
 _SS_white_sphere_r_20:
-	value=RaySphere(object position x(1000),object position y(1000),object position z(1000),20.0)*255
+	value=RaySphere(object position x(1000),object position y(1000),object position z(1000),10.0)*255
 	color object id,rgb(255*value,255*value,255*value)
 return
