@@ -13,5 +13,12 @@ function newSphere(index,objectid,posx#,posy#,posz#,radius#,rtm_c_r,rtm_c_g,rtm_
     Spheres#(index,5) = rtm_c_r
     Spheres#(index,6) = rtm_c_g
     Spheres#(index,7) = rtm_c_b
+
+    if object exist(objectid)<1
+        make object sphere objectid,radius#*2
+        set object objectid,1,1,0
+        position object objectid,posx#,posy#,posz#
+        color object objectid,rgb(rtm_c_r,rtm_c_g,rtm_c_b)
+    endif
 endfunction
 

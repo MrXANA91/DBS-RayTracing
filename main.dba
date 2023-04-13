@@ -36,6 +36,10 @@ rem -----------------------------
 rem Change screen resolution
 set display mode width,height,16
 
+rem Change background (backdrop) color to black
+backdrop on
+color backdrop rgb(10,10,20)
+
 rem --- 3D Camera fixed parameters ---
 camfov# = 3.14/2.905
 camNearClipPlane# = 1.0
@@ -43,6 +47,7 @@ camFarClipPlane# = 3000.0
 set camera fov camfov#
 set camera range camNearClipPlane#,camFarClipPlane#
 set camera view 0,0,width,height
+speedcam# = 0.1
 
 rem Bottom left camera point coordinates in local coordinate system
 dim bottomLeftLocal#(3)
@@ -83,136 +88,146 @@ set object 1001,0,0,0
 newSphere(1,1001,0.0,0.0,0.0,10.0,255,255,255)
 autocam off
 
-make object sphere 1002,5
-set object 1002,1,1,0
-position object 1002,0,20,0
-color object 1002,rgb(255,0,0)
 newSphere(2,1002,0.0,20.0,0.0,2.5,255,0,0)
+
+newSphere(3,1003,30.0,0.0,0.0,15.0,0,255,0)
+
+newSphere(4,1004,0.0,0.0,100.0,25.0,0,0,255)
 
 do
 
-rem On force la position du pointeur souris, de maniere cavaliere (supprimez la ligne suivante pour tester)
-hide mouse
-position mouse 320,240
-
-rem La souris dirige les angles de la camera
-cx#=wrapvalue(cx#+mousemovey())
-cy#=wrapvalue(cy#+mousemovex())
-cz#=wrapvalue(cz#+mousemovez())
-rotate camera cx#,cy#,cz#
-
-rem Deplacement simple
-if Upkey()=1
-	move camera 0.1
-endif
-
-if Downkey()=1
-	move camera -0.1
-endif
-
-if Returnkey()=1
-	show mouse
-	
-	rem Get camera position
-	cam#(1) = camera position x()
-	cam#(2) = camera position y()
-	cam#(3) = camera position z()
-	cama# = camera angle x()
-	camb# = camera angle y()
-	camc# = camera angle z()
-
-	rem Get camera coordinate system in (camright#,camup#,camforward#) system
-	BuildLocalCoordinateSystem(cama#,camb#,camc#)
-
-	for j=1 to height
-		for i=1 to width
-			r=0
-			g=0
-			b=0
-
-			rem Get ray direction in world coordinate system
-			BuildDirectionRay(i,j,width,height,planeWidth#,planeHeight#)
-			rem Result in dir# array
-	
-			rem Color map XYZ direction to RGB 
-			rem gosub _RS_map_xyz_to_rgb
- 			rem gosub _RS_white_sphere_r_20
-			gosub _RS_multiple_spheres
-			
-			pixels(i,j,1)=r
-			pixels(i,j,2)=g
-			pixels(i,j,3)=b
-		next i
-	next j
-
+	rem On force la position du pointeur souris, de maniere cavaliere (supprimez la ligne suivante pour tester)
 	hide mouse
-
-	rem -----------------------
-	rem ------ RENDERING ------
-	rem -----------------------
+	position mouse 320,240
 	
-	set camera view 0,0,1,1
+	rem La souris dirige les angles de la camera
+	cx#=wrapvalue(cx#+mousemovey())
+	cy#=wrapvalue(cy#+mousemovex())
+	cz#=wrapvalue(cz#+mousemovez())
+	rotate camera cx#,cy#,cz#
 	
-	Render2D(width,height,pratio)
-	show mouse
-
-	suspend for key
-
-	hide mouse
-
-	set camera view 0,0,width,height
-endif
-
-if spacekey()=1	
-	show mouse
-
-	cam#(1) = camera position x()
-	cam#(2) = camera position y()
-	cam#(3) = camera position z()
-	cama# = camera angle x()
-	camb# = camera angle y()
-	camc# = camera angle z()
-
-	rem Get camera coordinate system in (camright#,camup#,camforward#) system
-	BuildLocalCoordinateSystem(cama#,camb#,camc#)
+	rem Gestion input utilisateur
+	if Upkey()=1
+		move camera speedcam#
+	endif
 	
-	for x=1 to 10
-		for y=1 to 10
-			r=0
-			g=0
-			b=0
-
-			rem ID of the current object
-			id = (x-1)*10 + y
-
-			if (object exist(id)=0)
-				make object sphere id,0.1
-				set object id,1,1,0
-			endif
-
-			rem Get ray direction in world coordinate system
-			BuildDirectionRay(x,y,10,10,planeWidth#,planeHeight#)
-			rem Result in dir# array, pos# array has current pixel point coordinate in world coordinate system
-
-			position object id,pos#(1),pos#(2),pos#(3)
-
-			rem Test using those spheres
-			rem gosub _SS_xyz_to_rgb
-			rem gosub _SS_white_sphere_r_20
-			gosub _SS_multiple_spheres
-
-			color object id,rgb(r,g,b)
-		next y
-	next x
-
-	suspend for key
-
-	hide mouse
-endif
-
-if escapekey()=1
-	exit
-endif
+	if Downkey()=1
+		move camera (-1)*speedcam#
+	endif
+	
+	rem Modificateur vitesse
+	if inkey$()="+"
+		speedcam# = speedcam# + 0.1
+	endif
+	
+	if inkey$()="-"
+		speedcam# = speedcam# - 0.1
+		if speedcam#<0.1 then speedcam# = 0.1
+	endif
+	
+	if Returnkey()=1
+		show mouse
+		
+		rem Get camera position
+		cam#(1) = camera position x()
+		cam#(2) = camera position y()
+		cam#(3) = camera position z()
+		cama# = camera angle x()
+		camb# = camera angle y()
+		camc# = camera angle z()
+	
+		rem Get camera coordinate system in (camright#,camup#,camforward#) system
+		BuildLocalCoordinateSystem(cama#,camb#,camc#)
+	
+		for j=1 to height
+			for i=1 to width
+				r=0
+				g=0
+				b=0
+	
+				rem Get ray direction in world coordinate system
+				BuildDirectionRay(i,j,width,height,planeWidth#,planeHeight#)
+				rem Result in dir# array
+		
+				rem Color map XYZ direction to RGB 
+				rem gosub _RS_map_xyz_to_rgb
+	 			rem gosub _RS_white_sphere_r_20
+				gosub _RS_multiple_spheres
+				
+				pixels(i,j,1)=r
+				pixels(i,j,2)=g
+				pixels(i,j,3)=b
+			next i
+		next j
+	
+		hide mouse
+	
+		rem -----------------------
+		rem ------ RENDERING ------
+		rem -----------------------
+		
+		set camera view 0,0,1,1
+		
+		Render2D(width,height,pratio)
+		show mouse
+	
+		suspend for key
+	
+		hide mouse
+	
+		set camera view 0,0,width,height
+	endif
+	
+	if spacekey()=1	
+		show mouse
+	
+		cam#(1) = camera position x()
+		cam#(2) = camera position y()
+		cam#(3) = camera position z()
+		cama# = camera angle x()
+		camb# = camera angle y()
+		camc# = camera angle z()
+	
+		rem Get camera coordinate system in (camright#,camup#,camforward#) system
+		BuildLocalCoordinateSystem(cama#,camb#,camc#)
+		
+		for x=1 to 10
+			for y=1 to 10
+				r=0
+				g=0
+				b=0
+	
+				rem ID of the current object
+				id = (x-1)*10 + y
+	
+				if (object exist(id)=0)
+					make object sphere id,0.1
+					set object id,1,1,0
+				endif
+	
+				rem Get ray direction in world coordinate system
+				BuildDirectionRay(x,y,10,10,planeWidth#,planeHeight#)
+				rem Result in dir# array, pos# array has current pixel point coordinate in world coordinate system
+	
+				position object id,pos#(1),pos#(2),pos#(3)
+	
+				rem Test using those spheres
+				rem gosub _SS_xyz_to_rgb
+				rem gosub _SS_white_sphere_r_20
+				gosub _SS_multiple_spheres
+	
+				color object id,rgb(r,g,b)
+			next y
+		next x
+	
+		suspend for key
+	
+		hide mouse
+	endif
+	
+	if escapekey()=1
+		exit
+	endif
 
 loop
 
