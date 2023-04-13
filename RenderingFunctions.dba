@@ -6,7 +6,6 @@ rem ======================================================
 
 function Render2D(width, height, pratio)
 sync on
-hide mouse
 
 if pratio = 1
     save bitmap "fullrender_start.bmp"
@@ -69,7 +68,6 @@ else
     save bitmap "preview_render.bmp"
 endif
 
-show mouse
 sync off
 endfunction
 

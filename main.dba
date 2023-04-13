@@ -4,6 +4,7 @@ rem =============== Ray Tracing Project ==================
 rem ======================================================
 rem ======================================================
 
+#include "3DSceneManager.dba"
 #include "RayTracingFunctions.dba"
 #include "RenderingFunctions.dba"
 
@@ -24,6 +25,9 @@ rem
 rem Pour 640x480:
 rem 8  : 80	x 60  en 20sec
 pratio = 8
+
+rem Maximum number of spheres in the scene
+maxNumberOfSpheres = 5
 
 rem -----------------------------
 rem ---- Built-in 3D render -----
@@ -49,15 +53,46 @@ bottomLeftLocal#(1) = -1*planeWidth#/2.0
 bottomLeftLocal#(2) = -1*planeHeight#/2.0
 bottomLeftLocal#(3) = camNearClipPlane#
 
+rem Image data in RGB
+dim pixels(width,height,3)
+rem Camera position coordinates
+dim cam#(3)
+rem Camera local coordinate system
+dim camforward#(3)
+dim camup#(3)
+dim camright#(3)
+rem --- Ray Infos ---
+rem Current pixel position in world's coordinates
+dim pos#(3)
+rem Current pixel ray direction (normalized)
+dim dir#(3)
+rem Current ray HitInfo
+dim hitpoint#(3)
+dim hitnormal#(3)
+dim hitmaterial(3)
+rem SpheresID : ID
+rem Spheres# : posx,posy,posz,radius,mcr,mcg,mcb
+rem (mcr -> material colour red)
+dim SpheresID(maxNumberOfSpheres)
+dim Spheres#(maxNumberOfSpheres,7)
+
 rem --- 3D Scene ---
 autocam on
-make object sphere 1000,20
-set object 1000,0,0,0
+make object sphere 1001,20
+set object 1001,0,0,0
+newSphere(1,1001,0.0,0.0,0.0,10.0,255,255,255)
 autocam off
+
+make object sphere 1002,5
+set object 1002,1,1,0
+position object 1002,0,20,0
+color object 1002,rgb(255,0,0)
+newSphere(2,1002,0.0,20.0,0.0,2.5,255,0,0)
 
 do
 
 rem On force la position du pointeur souris, de maniere cavaliere (supprimez la ligne suivante pour tester)
+hide mouse
 position mouse 320,240
 
 rem La souris dirige les angles de la camera
@@ -76,24 +111,7 @@ if Downkey()=1
 endif
 
 if Returnkey()=1
-	hide mouse
-	
-	rem Image data in RGB
-	dim pixels(width,height,3)
-	rem Camera position coordinates
-	dim cam#(3)
-	rem Camera local coordinate system
-	dim camforward#(3)
-	dim camup#(3)
-	dim camright#(3)
-	rem --- Ray Infos ---
-	rem Current pixel position in world's coordinates
-	dim pos#(3)
-	rem Current pixel ray direction (normalized)
-	dim dir#(3)
-	rem Current ray HitInfo
-	dim hitpoint#(3)
-	dim hitnormal#(3)
+	show mouse
 	
 	rem Get camera position
 	cam#(1) = camera position x()
@@ -118,7 +136,8 @@ if Returnkey()=1
 	
 			rem Color map XYZ direction to RGB 
 			rem gosub _RS_map_xyz_to_rgb
-			gosub _RS_white_sphere_r_20
+ 			rem gosub _RS_white_sphere_r_20
+			gosub _RS_multiple_spheres
 			
 			pixels(i,j,1)=r
 			pixels(i,j,2)=g
@@ -126,7 +145,8 @@ if Returnkey()=1
 		next i
 	next j
 
-	
+	hide mouse
+
 	rem -----------------------
 	rem ------ RENDERING ------
 	rem -----------------------
@@ -134,27 +154,18 @@ if Returnkey()=1
 	set camera view 0,0,1,1
 	
 	Render2D(width,height,pratio)
+	show mouse
 
 	suspend for key
+
+	hide mouse
 
 	set camera view 0,0,width,height
 endif
 
-if spacekey()=1
-	rem ---- Arrays declarations ----
-	rem Image data in RGB
-	dim pixels(width,height,3)
-	rem Camera position coordinates
-	dim cam#(3)
-	rem Camera local coordinate system
-	dim camforward#(3)
-	dim camup#(3)
-	dim camright#(3)
-	rem Current pixel position in world's coordinates
-	dim pos#(3)
-	rem Current pixel direction ray (normalized)
-	dim dir#(3)
-	
+if spacekey()=1	
+	show mouse
+
 	cam#(1) = camera position x()
 	cam#(2) = camera position y()
 	cam#(3) = camera position z()
@@ -167,6 +178,10 @@ if spacekey()=1
 	
 	for x=1 to 10
 		for y=1 to 10
+			r=0
+			g=0
+			b=0
+
 			rem ID of the current object
 			id = (x-1)*10 + y
 
@@ -183,9 +198,16 @@ if spacekey()=1
 
 			rem Test using those spheres
 			rem gosub _SS_xyz_to_rgb
-			gosub _SS_white_sphere_r_20
+			rem gosub _SS_white_sphere_r_20
+			gosub _SS_multiple_spheres
+
+			color object id,rgb(r,g,b)
 		next y
 	next x
+
+	suspend for key
+
+	hide mouse
 endif
 
 if escapekey()=1
@@ -210,10 +232,18 @@ _RS_map_xyz_to_rgb:
 return
 
 _RS_white_sphere_r_20:
-	value=RaySphere(object position x(1000),object position y(1000),object position z(1000),10.0)*255
+	value=0
+	if RaySphere(object position x(1001),object position y(1001),object position z(1001),10.0) > -1.0 then value = 255
 	r=value
 	g=value
 	b=value
+return
+
+_RS_multiple_spheres:
+	value#=CalculateRayCollision(maxNumberOfSpheres)
+	r = hitmaterial(1)
+	g = hitmaterial(2)
+	b = hitmaterial(3)
 return
 
 rem SPHERES SUBROUTINES
@@ -224,10 +254,22 @@ _SS_xyz_to_rgb:
 	if dir#(2) > 1.0 then dir#(2) = 1.0
 	if dir#(3) < 0.0 then dir#(3) = 0.0
 	if dir#(3) > 1.0 then dir#(3) = 1.0
-	color object id,rgb(dir#(1)*255,dir#(2)*255,dir#(3)*255)
+	r = dir#(1)*255
+	g = dir#(2)*255
+	b = dir#(3)*255
 return
 
 _SS_white_sphere_r_20:
-	value=RaySphere(object position x(1000),object position y(1000),object position z(1000),10.0)*255
-	color object id,rgb(255*value,255*value,255*value)
+	value=0
+	if RaySphere(object position x(1001),object position y(1001),object position z(1001),10.0) > -1.0 then value = 255
+	r = value
+	g = value
+	b = value
+return
+
+_SS_multiple_spheres:
+	value#=CalculateRayCollision(maxNumberOfSpheres)
+	r = hitmaterial(1)
+	g = hitmaterial(2)
+	b = hitmaterial(3)
 return

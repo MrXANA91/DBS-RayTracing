@@ -1,0 +1,17 @@
+rem ======================================================
+rem ======================================================
+rem ================= 3D Scene Manager ===================
+rem ======================================================
+rem ======================================================
+
+function newSphere(index,objectid,posx#,posy#,posz#,radius#,rtm_c_r,rtm_c_g,rtm_c_b)
+    SpheresID(index) = objectid
+    Spheres#(index,1) = posx#
+    Spheres#(index,2) = posy#
+    Spheres#(index,3) = posz#
+    Spheres#(index,4) = radius#
+    Spheres#(index,5) = rtm_c_r
+    Spheres#(index,6) = rtm_c_g
+    Spheres#(index,7) = rtm_c_b
+endfunction
+

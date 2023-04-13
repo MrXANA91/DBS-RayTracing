@@ -78,7 +78,7 @@ function RaySphere(scx#,scy#,scz#,sradius#)
 	hitnormal#(2) = 0.0
 	hitnormal#(3) = 0.0
 
-	hitbool = 0
+	dst# = -1.0
 
 	rem Assuming that position 0,0,0 is at the center of the sphere
 	rem Checking if the ray has hit the sphere is just solving the following equation :
@@ -120,10 +120,77 @@ function RaySphere(scx#,scy#,scz#,sradius#)
 			hitnormal#(1) = hitnormal#(1)/Norm#
 			hitnormal#(2) = hitnormal#(2)/Norm#
 			hitnormal#(3) = hitnormal#(3)/Norm#
-
-			hitbool = 1
 		endif
 	endif
 
-endfunction hitbool
+endfunction dst#
+
+function CalculateRayCollision(numSpheres)
+	rem temporary HitInfo variable to keep track of the smallest distance collision
+	hpx#=0.0
+	hpy#=0.0
+	hpz#=0.0
+	hnx#=0.0
+	hny#=0.0
+	hnz#=0.0
+	hitmaterial(1)=0
+	hitmaterial(2)=0
+	hitmaterial(3)=0
+	closestHitDst# = -1.0
+
+	for index=1 to numSpheres
+		rem If object doesn't exist, we skip
+		rem We check first if there is a number >0 stored
+		if SpheresID(index,1)>0
+			if object exist(SpheresID(index,1))>=1
+
+				currentDst# = RaySphere(Spheres#(index,1),Spheres#(index,2),Spheres#(index,3),Spheres#(index,4))
+				
+				rem Don't update if ray didn't hit or ray hit but a further sphere
+				if currentDst# > -1.0
+					if closestHitDst# > -1.0
+						if currentDst# < closestHitDst#
+
+							rem Update closest hitinfo
+							closestHitDst# = currentDst#
+							hpx#=hitpoint#(1)
+							hpy#=hitpoint#(2)
+							hpz#=hitpoint#(3)
+							hnx#=hitnormal#(1)
+							hny#=hitnormal#(2)
+							hnz#=hitnormal#(3)
+							hitmaterial(1)=Spheres#(index,5)
+							hitmaterial(2)=Spheres#(index,6)
+							hitmaterial(3)=Spheres#(index,7)
+
+						endif
+					else
+
+						rem Update closest hitinfo
+						closestHitDst# = currentDst#
+						hpx#=hitpoint#(1)
+						hpy#=hitpoint#(2)
+						hpz#=hitpoint#(3)
+						hnx#=hitnormal#(1)
+						hny#=hitnormal#(2)
+						hnz#=hitnormal#(3)
+						hitmaterial(1)=Spheres#(index,5)
+						hitmaterial(2)=Spheres#(index,6)
+						hitmaterial(3)=Spheres#(index,7)
+
+					endif
+				endif
+			endif
+		endif
+	next index
+
+	rem We kept closest hitinfo, reupload to global arrays
+	rem HitMaterial has already been updated
+	hitpoint#(1) = hpx#
+	hitpoint#(2) = hpy#
+	hitpoint#(3) = hpz#
+	hitnormal#(1) = hnx#
+	hitnormal#(2) = hny#
+	hitnormal#(3) = hnz#
+endfunction  closestHitDst#
 
