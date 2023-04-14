@@ -1,6 +1,9 @@
 # Ignore everything
 *
 
+# Except subdirectories
+/*!
+
 # Except this file, MarkDown and DBA script files
 !.gitignore
 !*.dba
