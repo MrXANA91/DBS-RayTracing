@@ -4,6 +4,7 @@ rem =============== Ray Tracing Project ==================
 rem ======================================================
 rem ======================================================
 
+#include "Random.dba"
 #include "3DSceneManager.dba"
 #include "RayTracingFunctions.dba"
 #include "RenderingFunctions.dba"
@@ -28,6 +29,9 @@ pratio = 8
 
 rem Maximum number of spheres in the scene
 maxNumberOfSpheres = 5
+
+rem Maximum ray bounces
+maxBounceCount = 1
 
 rem -----------------------------
 rem ---- Built-in 3D render -----
@@ -58,6 +62,20 @@ bottomLeftLocal#(1) = -1*planeWidth#/2.0
 bottomLeftLocal#(2) = -1*planeHeight#/2.0
 bottomLeftLocal#(3) = camNearClipPlane#
 
+rem Exponential needed in calculation but not available here...
+rem so approxation needed
+dim Exponential#(1)
+Exponential#(1) = ApproxEXP(1000)
+
+rem for mathematical debug purposes
+rem 1 : last RandomValueNormalDistribution value
+rem 2 : --> theta
+rem 3 : --> rho
+rem 4 : last input 'x' for 'Ln(x)' approx
+rem 5 : --> result Ln(x)
+rem 6 : --> nb of interations to get to that Ln(x) value
+dim debugvalues#(10)
+
 rem Image data in RGB
 dim pixels(width,height,3)
 rem Camera position coordinates
@@ -74,25 +92,30 @@ dim dir#(3)
 rem Current ray HitInfo
 dim hitpoint#(3)
 dim hitnormal#(3)
-dim hitmaterial(3)
+dim hitmaterial(7)
 rem SpheresID : ID
-rem Spheres# : posx,posy,posz,radius,mcr,mcg,mcb
-rem (mcr -> material colour red)
+rem Spheres# : posx,posy,posz,radius,mcr,mcg,mcb,mlr,mlg,mlb,mls
+rem (mcr/g/b -> material colour red/green/blue)
+rem (mlr/g/b -> material light red/green/blue, as emitting light)
+rem (mls	 -> material light strength)
 dim SpheresID(maxNumberOfSpheres)
-dim Spheres#(maxNumberOfSpheres,7)
+dim Spheres#(maxNumberOfSpheres,11)
+rem incomingLight from the Trace function
+dim incominglight(3)
 
 rem --- 3D Scene ---
 autocam on
 make object sphere 1001,20
+color object 1001,rgb(0,0,255)
 set object 1001,0,0,0
-newSphere(1,1001,0.0,0.0,0.0,10.0,255,255,255)
+newSphere(1,1001,0.0,0.0,0.0,10.0,0,0,255,0,0,0,0)
 autocam off
 
-newSphere(2,1002,0.0,20.0,0.0,2.5,255,0,0)
+newSphere(2,1002,0.0,20.0,0.0,2.5,255,0,0,0,0,0,0)
 
-newSphere(3,1003,30.0,0.0,0.0,15.0,0,255,0)
+newSphere(3,1003,30.0,0.0,0.0,15.0,0,255,0,0,0,0,0)
 
-newSphere(4,1004,0.0,0.0,100.0,25.0,0,0,255)
+newSphere(4,1004,0.0,0.0,1000.0,450.0,0,0,0,255,255,255,255)
 
 do
 
@@ -150,9 +173,10 @@ do
 				rem Result in dir# array
 		
 				rem Color map XYZ direction to RGB 
-				rem gosub _RS_map_xyz_to_rgb
-	 			rem gosub _RS_white_sphere_r_20
-				gosub _RS_multiple_spheres
+				rem gosub _map_xyz_to_rgb
+	 			rem gosub _white_sphere_r_20
+				rem gosub _multiple_spheres
+				gosub _trace_ray
 				
 				pixels(i,j,1)=r
 				pixels(i,j,2)=g
@@ -212,9 +236,10 @@ do
 				position object id,pos#(1),pos#(2),pos#(3)
 	
 				rem Test using those spheres
-				rem gosub _SS_xyz_to_rgb
-				rem gosub _SS_white_sphere_r_20
-				gosub _SS_multiple_spheres
+				rem gosub _xyz_to_rgb
+				rem gosub _white_sphere_r_20
+				rem gosub _multiple_spheres
+				gosub _trace_ray
 	
 				color object id,rgb(r,g,b)
 			next y
@@ -234,7 +259,7 @@ loop
 end
 
 rem RENDER SUBROUTINES
-_RS_map_xyz_to_rgb:
+_map_xyz_to_rgb:
 	if dir#(1) < 0.0 then dir#(1) = 0.0
 	if dir#(1) > 1.0 then dir#(1) = 1.0
 	if dir#(2) < 0.0 then dir#(2) = 0.0
@@ -246,7 +271,7 @@ _RS_map_xyz_to_rgb:
 	b=dir#(3)*255
 return
 
-_RS_white_sphere_r_20:
+_white_sphere_r_20:
 	value=0
 	if RaySphere(object position x(1001),object position y(1001),object position z(1001),10.0) > -1.0 then value = 255
 	r=value
@@ -254,37 +279,16 @@ _RS_white_sphere_r_20:
 	b=value
 return
 
-_RS_multiple_spheres:
+_multiple_spheres:
 	value#=CalculateRayCollision(maxNumberOfSpheres)
 	r = hitmaterial(1)
 	g = hitmaterial(2)
 	b = hitmaterial(3)
 return
 
-rem SPHERES SUBROUTINES
-_SS_xyz_to_rgb:
-	if dir#(1) < 0.0 then dir#(1) = 0.0
-	if dir#(1) > 1.0 then dir#(1) = 1.0
-	if dir#(2) < 0.0 then dir#(2) = 0.0
-	if dir#(2) > 1.0 then dir#(2) = 1.0
-	if dir#(3) < 0.0 then dir#(3) = 0.0
-	if dir#(3) > 1.0 then dir#(3) = 1.0
-	r = dir#(1)*255
-	g = dir#(2)*255
-	b = dir#(3)*255
-return
-
-_SS_white_sphere_r_20:
-	value=0
-	if RaySphere(object position x(1001),object position y(1001),object position z(1001),10.0) > -1.0 then value = 255
-	r = value
-	g = value
-	b = value
-return
-
-_SS_multiple_spheres:
-	value#=CalculateRayCollision(maxNumberOfSpheres)
-	r = hitmaterial(1)
-	g = hitmaterial(2)
-	b = hitmaterial(3)
+_trace_ray:
+	Trace(maxBounceCount, maxNumberOfSpheres, 1000)
+	r = incominglight(1)
+	g = incominglight(2)
+	b = incominglight(3)
 return
