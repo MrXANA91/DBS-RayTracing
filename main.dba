@@ -28,13 +28,13 @@ rem
 rem For 640x480:
 rem 8  : 80	x 60  in 20sec
 rem Render ratio (=1 full render, >1 faster preview)
-pratio = 8
+pratio = 1
 
 rem Maximum number of spheres in the scene
 maxNumberOfSpheres = 5
 
 rem Maximum ray bounces
-maxBounceCount = 1
+maxBounceCount = 5
 
 rem Number of rays per pixel
 numRaysPerPixel = 10
@@ -57,7 +57,7 @@ camFarClipPlane# = 3000.0
 set camera fov camfov#
 set camera range camNearClipPlane#,camFarClipPlane#
 set camera view 0,0,width,height
-speedcam# = 0.1
+speedcam# = 1.0
 
 rem Bottom left camera point coordinates in local coordinate system
 dim bottomLeftLocal#(3)
@@ -110,18 +110,20 @@ rem incomingLight from the Trace function
 dim incominglight(3)
 
 rem --- 3D Scene ---
-autocam on
-make object sphere 1001,20
-color object 1001,rgb(0,0,255)
-set object 1001,0,0,0
-newSphere(1,1001,0.0,0.0,0.0,10.0,0,0,255,0,0,0,0)
 autocam off
 
-newSphere(2,1002,0.0,20.0,0.0,2.5,255,0,0,0,0,0,0)
+newSphere(1,1001,0.0,-490.0,0.0,500.0,128,128,255,0,0,0,0)
 
-newSphere(3,1003,30.0,0.0,0.0,15.0,0,255,0,0,0,0,0)
+newSphere(2,1002,0.0,12.5,0.0,2.5,255,0,0,0,0,0,0)
 
-newSphere(4,1004,0.0,0.0,1000.0,450.0,0,0,0,255,255,255,255)
+newSphere(3,1003,5.0,12.5,0.0,2.5,0,255,0,0,0,0,0)
+
+newSphere(4,1004,-5.0,12.5,0.0,2.5,0,0,255,0,0,0,0)
+
+newSphere(5,1005,0.0,0.0,1000.0,450.0,0,0,0,255,255,255,255)
+
+position camera -10.0,17.5,-20.0
+point camera 200.0,12.5,0.0
 
 do
 
