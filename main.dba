@@ -17,14 +17,17 @@ rem Screen resolution
 width = 640
 height = 480
 
-rem Render ratio (=1 full render, >1 faster preview)
-rem Pour 1920x1080:
-rem 20 : 96	x 54 	en 21sec
-rem 10 : 192x 108 en 1min
-rem 3  : 640x 360 en 15min
+rem TLDR : times below are no longer relevant
+rem Time below are calculated from the beginning of the graphical render
+rem meaning after the calculation, which can now last quite a lot of time 
+rem For 1920x1080:
+rem 20 : 96	x 54 	in 21sec
+rem 10 : 192x 108 in 1min
+rem 3  : 640x 360 in 15min
 rem 
-rem Pour 640x480:
-rem 8  : 80	x 60  en 20sec
+rem For 640x480:
+rem 8  : 80	x 60  in 20sec
+rem Render ratio (=1 full render, >1 faster preview)
 pratio = 8
 
 rem Maximum number of spheres in the scene
@@ -32,6 +35,9 @@ maxNumberOfSpheres = 5
 
 rem Maximum ray bounces
 maxBounceCount = 1
+
+rem Number of rays per pixel
+numRaysPerPixel = 10
 
 rem -----------------------------
 rem ---- Built-in 3D render -----
@@ -176,7 +182,8 @@ do
 				rem gosub _map_xyz_to_rgb
 	 			rem gosub _white_sphere_r_20
 				rem gosub _multiple_spheres
-				gosub _trace_ray
+				rem gosub _trace_ray
+				gosub _trace_multiple_rays
 				
 				pixels(i,j,1)=r
 				pixels(i,j,2)=g
@@ -291,4 +298,42 @@ _trace_ray:
 	r = incominglight(1)
 	g = incominglight(2)
 	b = incominglight(3)
+return
+
+_trace_multiple_rays:
+	rem Init total R G B
+	totalR = 0
+	totalG = 0
+	totalB = 0
+
+	rem Store original pos and dir
+	posx# = pos#(1)
+	posy# = pos#(2)
+	posz# = pos#(3)
+	dirx# = dir#(1)
+	diry# = dir#(2)
+	dirz# = dir#(3)
+	
+	for rayNum=1 to numRaysPerPixel
+		rem Restore original pos and dir
+		pos#(1) = posx#
+		pos#(2) = posy#
+		pos#(3) = posz#
+		dir#(1) = dirx#
+		dir#(2) = diry#
+		dir#(3) = dirz#
+
+		rem Trace calculation
+		Trace(maxBounceCount, maxNumberOfSpheres, 1000)
+
+		rem Feeding total R G B for mean
+		totalR = totalR + incominglight(1)
+		totalG = totalG + incominglight(2)
+		totalB = totalB + incominglight(3)
+	next rayNum
+	
+	rem Mean into pixel
+	r = totalR/numRaysPerPixel
+	g = totalG/numRaysPerPixel
+	b = totalB/numRaysPerPixel
 return
