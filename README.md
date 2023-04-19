@@ -8,7 +8,7 @@ Here is the video link : <br/>
 ![7_RT_5rays_5bounces_render](images/7_RT_5rays_5bounces_render.bmp) <br/>
 Basic RayTracing 1920x1080. Calculations lasted 45 minutes.
 
-![7_RT_5rays_5bounces_render](images/7_RT_5rays_5bounces_render.bmp) <br/>
+![7_RT_5rays_5bounces_3D](images/7_RT_5rays_5bounces_3D.bmp) <br/>
 3D Scene for reference.<br/>
 Artefact on the left as the 3D engine doesn't handle well 1920x1080, resulting in a not-updated-until-redrawn background.<br/>
 3D engine doesn't draw big sphere as a sphere, explaining the difference of ground height (supposed to be a large sphere).
