@@ -4,15 +4,11 @@ RayTracing project using DarkBASIC Software. Largely inspired by Sebastian Lague
 Here is the video link : <br/>
 [![Sebastian Lague Ray Tracing video](https://img.youtube.com/vi/Qz0KTGYJtUk/0.jpg)](https://www.youtube.com/watch?v=Qz0KTGYJtUk)
 
-### Ray collision detection with sphere and colored material
-![1-Colored Spheres 3D](images/1_colored_spheres_3D.bmp) <br/>
-Image of the 3D scene with the built-in 3D engine, 640x480 resolution
+### Render example with DarkBASIC
+![7_RT_5rays_5bounces_render](images/7_RT_5rays_5bounces_render.bmp) <br/>
+Basic RayTracing 1920x1080. Calculations lasted 45 minutes.
 
-![1-Colored Spheres Preview](images/1_colored_spheres_preview.bmp) <br/>
-Ray collision detection render, calculated on a 640x480 resolution but displayed as 80x60 in 20 seconds.
-
-![2-Colored Spheres 3D](images/2_colored_spheres_3D.bmp) <br/>
-Image of the 3D scene with the built-in 3D engine, 640x480 resolution
-
-![2-Colored Spheres Render](images/2_colored_spheres_render.bmp) <br/>
-Ray collision detection render, 640x480 resolution in 14 minutes.
+![7_RT_5rays_5bounces_render](images/7_RT_5rays_5bounces_render.bmp) <br/>
+3D Scene for reference.<br/>
+Artefact on the left as the 3D engine doesn't handle well 1920x1080, resulting in a not-updated-until-redrawn background.<br/>
+3D engine doesn't draw big sphere as a sphere, explaining the difference of ground height (supposed to be a large sphere).

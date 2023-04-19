@@ -14,37 +14,33 @@ rem -------- Parameters ---------
 rem -----------------------------
 
 rem Screen resolution
-width = 640
-height = 480
+width = 1920
+height = 1080
 
-rem TLDR : times below are no longer relevant
-rem Time below are calculated from the beginning of the graphical render
-rem meaning after the calculation, which can now last quite a lot of time 
-rem For 1920x1080:
-rem 20 : 96	x 54 	in 21sec
-rem 10 : 192x 108 in 1min
-rem 3  : 640x 360 in 15min
-rem 
-rem For 640x480:
-rem 8  : 80	x 60  in 20sec
-rem Render ratio (=1 full render, >1 faster preview)
+rem Display ratio (=1 full resolution display)
+rem (were used for downscalled faster preview, but displaying is now 30 seconds even at full res 1920x1080)
 pratio = 1
 
-rem Maximum number of spheres in the scene
-maxNumberOfSpheres = 5
-
+rem Calculation times
+rem 1920x1080 :
+rem - 5-5 : 44min 18sec
+rem 640x480 :
+rem - 2-5 : 2min
+rem - 5-5 : 4min30
+rem Number of rays per pixel
+numRaysPerPixel = 5
 rem Maximum ray bounces
 maxBounceCount = 5
 
-rem Number of rays per pixel
-numRaysPerPixel = 10
+rem Maximum number of spheres in the scene
+maxNumberOfSpheres = 5
 
 rem -----------------------------
 rem ---- Built-in 3D render -----
 rem -----------------------------
 
 rem Change screen resolution
-set display mode width,height,16
+set display mode width,height,32
 
 rem Change background (backdrop) color to black
 backdrop on
@@ -120,7 +116,7 @@ newSphere(3,1003,5.0,12.5,0.0,2.5,0,255,0,0,0,0,0)
 
 newSphere(4,1004,-5.0,12.5,0.0,2.5,0,0,255,0,0,0,0)
 
-newSphere(5,1005,0.0,0.0,1000.0,450.0,0,0,0,255,255,255,255)
+newSphere(5,1005,0.0,0.0,550.0,450.0,0,0,0,255,255,255,255)
 
 position camera -10.0,17.5,-20.0
 point camera 200.0,12.5,0.0
@@ -158,6 +154,8 @@ do
 	
 	if Returnkey()=1
 		show mouse
+
+		save bitmap "start_calculation.bmp"
 		
 		rem Get camera position
 		cam#(1) = camera position x()
