@@ -105,6 +105,14 @@ dim Spheres#(maxNumberOfSpheres,11)
 rem incomingLight from the Trace function
 dim incominglight(3)
 
+rem Render type choice
+rem 0 : last raytracing rendering (can last really long!)
+rem 1 : map xyz to rgb
+rem 2 : white sphere radius 20 at 0,0,0
+rem 3 : multiple spheres with color
+rem 4 : trace one ray
+rendertype = 0
+
 rem --- 3D Scene ---
 autocam off
 
@@ -145,11 +153,52 @@ do
 	rem Modificateur vitesse
 	if inkey$()="+"
 		speedcam# = speedcam# + 0.1
+		set cursor 0,0
+		print "SPEEDCAM = ",speedcam#
+		sync
 	endif
 	
 	if inkey$()="-"
 		speedcam# = speedcam# - 0.1
 		if speedcam#<0.1 then speedcam# = 0.1
+		set cursor 0,0
+		print "SPEEDCAM = ",speedcam#
+		sync
+	endif
+
+	if inkey$()="0"
+		rendertype=0
+		set cursor 0,0
+		print "RENDERTYPE = ",rendertype
+		sync
+	endif
+
+	if inkey$()="1"
+		rendertype=1
+		set cursor 0,0
+		print "RENDERTYPE = ",rendertype
+		sync
+	endif
+
+	if inkey$()="2"
+		rendertype=2
+		set cursor 0,0
+		print "RENDERTYPE = ",rendertype
+		sync
+	endif
+
+	if inkey$()="3"
+		rendertype=3
+		set cursor 0,0
+		print "RENDERTYPE = ",rendertype
+		sync
+	endif
+
+	if inkey$()="4"
+		rendertype=4
+		set cursor 0,0
+		print "RENDERTYPE = ",rendertype
+		sync
 	endif
 	
 	if Returnkey()=1
@@ -178,12 +227,12 @@ do
 				BuildDirectionRay(i,j,width,height,planeWidth#,planeHeight#)
 				rem Result in dir# array
 		
-				rem Color map XYZ direction to RGB 
-				rem gosub _map_xyz_to_rgb
-	 			rem gosub _white_sphere_r_20
-				rem gosub _multiple_spheres
-				rem gosub _trace_ray
-				gosub _trace_multiple_rays
+				rem Calculate Pixels 
+				if rendertype=1 then gosub _map_xyz_to_rgb
+	 			if rendertype=2 then gosub _white_sphere_r_20
+				if rendertype=3 then gosub _multiple_spheres
+				if rendertype=4 then gosub _trace_ray
+				if rendertype=0 then gosub _trace_multiple_rays
 				
 				pixels(i,j,1)=r
 				pixels(i,j,2)=g
@@ -243,10 +292,11 @@ do
 				position object id,pos#(1),pos#(2),pos#(3)
 	
 				rem Test using those spheres
-				rem gosub _xyz_to_rgb
-				rem gosub _white_sphere_r_20
-				rem gosub _multiple_spheres
-				gosub _trace_ray
+				if rendertype=1 then gosub _map_xyz_to_rgb
+	 			if rendertype=2 then gosub _white_sphere_r_20
+				if rendertype=3 then gosub _multiple_spheres
+				if rendertype=4 then gosub _trace_ray
+				if rendertype=0 then gosub _trace_multiple_rays
 	
 				color object id,rgb(r,g,b)
 			next y
@@ -280,7 +330,7 @@ return
 
 _white_sphere_r_20:
 	value=0
-	if RaySphere(object position x(1001),object position y(1001),object position z(1001),10.0) > -1.0 then value = 255
+	if RaySphere(0.0,0.0,0.0,10.0) > -1.0 then value = 255
 	r=value
 	g=value
 	b=value
