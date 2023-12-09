@@ -219,7 +219,7 @@ do
 	if Returnkey()=1
 		show mouse
 
-		save bitmap "../start_calculation.bmp"
+		save bitmap "start_calculation.bmp"
 		
 		rem Get camera position
 		cam#(1) = camera position x()

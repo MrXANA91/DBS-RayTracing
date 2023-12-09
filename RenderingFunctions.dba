@@ -8,7 +8,7 @@ function Render2D(width, height, pratio)
 sync on
 
 if pratio = 1
-    save bitmap "../fullrender_start.bmp"
+    save bitmap "fullrender_start.bmp"
 
     for j=1 to height
         for i=1 to width
@@ -21,7 +21,7 @@ if pratio = 1
         sync
     next j
 
-    save bitmap "../full_render.bmp"
+    save bitmap "full_render.bmp"
 else 
     pheight = height/pratio
     pwidth = width/pratio
@@ -48,7 +48,7 @@ else
         next i
     next j
     
-    save bitmap "../preview_start.bmp"
+    save bitmap "preview_start.bmp"
     
     for j=1 to pheight
         for i=1 to pwidth
@@ -65,7 +65,7 @@ else
         sync
     next j
 
-    save bitmap "../preview_render.bmp"
+    save bitmap "preview_render.bmp"
 endif
 
 sync off
