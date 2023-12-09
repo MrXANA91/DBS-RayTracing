@@ -1,6 +1,7 @@
 # Project Specific
 /*.bmp
 DBCompile.log
+debug.log
 
 # Visual Studio Code -- gitignore
 .vscode/*
