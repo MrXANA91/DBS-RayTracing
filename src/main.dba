@@ -14,8 +14,8 @@ rem -------- Parameters ---------
 rem -----------------------------
 
 rem Screen resolution
-width = 1920
-height = 1080
+width = 640
+height = 480
 
 rem Display ratio (=1 full resolution display)
 rem (were used for downscalled faster preview, but displaying is now 30 seconds even at full res 1920x1080)
@@ -26,7 +26,7 @@ rem 1920x1080 :
 rem - 5-5 : 44min 18sec
 rem 640x480 :
 rem - 2-5 : 2min
-rem - 5-5 : 4min30
+rem - 5-5 : 5min40
 rem Number of rays per pixel
 numRaysPerPixel = 5
 rem Maximum ray bounces
@@ -68,6 +68,8 @@ rem Exponential needed in calculation but not available here...
 rem so approxation needed
 dim Exponential#(1)
 Exponential#(1) = ApproxEXP(1000)
+rem value used for generating random values
+_range = 1000
 
 rem for mathematical debug purposes
 rem 1 : last RandomValueNormalDistribution value
@@ -115,6 +117,17 @@ rendertype = 0
 
 rem --- 3D Scene ---
 autocam off
+rem hide light 0
+
+rem Ambient light
+dim EnvironmentLight(4)
+EnvironmentLight(1) = 135
+EnvironmentLight(2) = 206
+EnvironmentLight(3) = 235
+EnvironmentLight(4) = (25*255)/100
+
+rem set ambient light (EnvironmentLight(4)*100)/255
+rem color ambient light rgb(EnvironmentLight(1),EnvironmentLight(2),EnvironmentLight(3))
 
 newSphere(1,1001,0.0,-490.0,0.0,500.0,128,128,255,0,0,0,0)
 
@@ -122,9 +135,11 @@ newSphere(2,1002,0.0,12.5,0.0,2.5,255,0,0,0,0,0,0)
 
 newSphere(3,1003,5.0,12.5,0.0,2.5,0,255,0,0,0,0,0)
 
-newSphere(4,1004,-5.0,12.5,0.0,2.5,0,0,255,0,0,255,25)
+newSphere(4,1004,-5.0,12.5,0.0,2.5,0,0,255,0,0,0,0)
 
 newSphere(5,1005,0.0,0.0,550.0,450.0,0,0,0,255,255,255,255)
+
+rem newSphere(1,1001,0.0,0.0,0.0,10.0,255,255,255,0,0,0,0)
 
 position camera -10.0,17.5,-20.0
 point camera 200.0,12.5,0.0
@@ -169,42 +184,42 @@ do
 	if inkey$()="0"
 		rendertype=0
 		set cursor 0,0
-		print "RENDERTYPE = ",rendertype
+		print "RENDERTYPE = _trace_multiple_rays"
 		sync
 	endif
 
 	if inkey$()="1"
 		rendertype=1
 		set cursor 0,0
-		print "RENDERTYPE = ",rendertype
+		print "RENDERTYPE = _map_xyz_to_rgb"
 		sync
 	endif
 
 	if inkey$()="2"
 		rendertype=2
 		set cursor 0,0
-		print "RENDERTYPE = ",rendertype
+		print "RENDERTYPE = _white_sphere_r_20"
 		sync
 	endif
 
 	if inkey$()="3"
 		rendertype=3
 		set cursor 0,0
-		print "RENDERTYPE = ",rendertype
+		print "RENDERTYPE = _multiple_spheres"
 		sync
 	endif
 
 	if inkey$()="4"
 		rendertype=4
 		set cursor 0,0
-		print "RENDERTYPE = ",rendertype
+		print "RENDERTYPE = _trace_ray"
 		sync
 	endif
 	
 	if Returnkey()=1
 		show mouse
 
-		save bitmap "start_calculation.bmp"
+		save bitmap "../start_calculation.bmp"
 		
 		rem Get camera position
 		cam#(1) = camera position x()
@@ -344,7 +359,7 @@ _multiple_spheres:
 return
 
 _trace_ray:
-	Trace(maxBounceCount, maxNumberOfSpheres, 1000)
+	Trace(maxBounceCount, maxNumberOfSpheres, _range)
 	r = incominglight(1)
 	g = incominglight(2)
 	b = incominglight(3)
@@ -374,7 +389,7 @@ _trace_multiple_rays:
 		dir#(3) = dirz#
 
 		rem Trace calculation
-		Trace(maxBounceCount, maxNumberOfSpheres, 1000)
+		Trace(maxBounceCount, maxNumberOfSpheres, _range)
 
 		rem Feeding total R G B for mean
 		totalR = totalR + incominglight(1)

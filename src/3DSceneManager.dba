@@ -24,6 +24,13 @@ function newSphere(index,objectid,posx#,posy#,posz#,radius#,rtm_c_r,rtm_c_g,rtm_
         position object objectid,posx#,posy#,posz#
         color object objectid,rgb(rtm_c_r,rtm_c_g,rtm_c_b)
         rem TODO : light emission object ?
+        rem if rtm_l_s>0
+        rem     make light index
+        rem     set point light index,posx#,posy#,posz#
+        rem     color light index,rgb((rtm_l_r*rtm_l_s)/255,(rtm_l_g*rtm_l_s)/255,(rtm_l_b*rtm_l_s)/255)
+        rem     set light range 0,10000
+        rem     show light index
+        rem endif
     endif
 endfunction
 

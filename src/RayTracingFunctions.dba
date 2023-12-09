@@ -255,6 +255,9 @@ function Trace(maxBounceCount, numSpheres, rndrange)
 			rayColorG = (rayColorG * hitmaterial(2)) / 255
 			rayColorB = (rayColorB * hitmaterial(3)) / 255
 		else
+			rem incominglight(1) = incominglight(1) + (EnvironmentLight(1) * EnvironmentLight(4))/255
+			rem incominglight(2) = incominglight(2) + (EnvironmentLight(2) * EnvironmentLight(4))/255
+			rem incominglight(3) = incominglight(3) + (EnvironmentLight(3) * EnvironmentLight(4))/255
 			exit
 		endif
 	next i
